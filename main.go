@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	t := NewTableWriter(os.Stdout, 2)
+	t := NewTable(2)
 	t.Debug = true
 	t.AddRow(Row{
 		Cell{Format: "%s color", Values: []ColorableCellValue{
@@ -41,7 +41,7 @@ func main() {
 		Cell{Format: "No color here."},
 	})
 
-	if err := t.Flush(); err != nil {
+	if err := t.Write(os.Stdout); err != nil {
 		log.Fatal(err)
 	}
 

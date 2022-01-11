@@ -12,7 +12,8 @@ import (
 	"github.com/fatih/color"
 )
 
-type TableWriter struct {
+// A Table is a set of rows each containing cells.
+type Table struct {
 	rowFormat     string
 	rows          []Row
 	overheads     []int
@@ -20,14 +21,14 @@ type TableWriter struct {
 	currentLine   int
 	buf           *strings.Builder
 	tw            *tabwriter.Writer
-	dest          io.Writer
 
 	Debug bool
 }
 
-func NewTableWriter(w io.Writer, columns int) *TableWriter {
+// NewTable creates a new table with the specified number of columns.
+func NewTable(columns int) *Table {
 	buf := &strings.Builder{}
-	return &TableWriter{
+	return &Table{
 		rowFormat:     strings.Repeat("%s\t", columns) + "\n",
 		rows:          []Row{},
 		overheads:     make([]int, columns),
@@ -35,11 +36,11 @@ func NewTableWriter(w io.Writer, columns int) *TableWriter {
 		currentLine:   -1,
 		buf:           buf,
 		tw:            tabwriter.NewWriter(buf, 0, 0, 2, ' ', tabwriter.Debug),
-		dest:          w,
 	}
 }
 
-func (t *TableWriter) AddRow(row Row) {
+// AddRow adds a row to the table.
+func (t *Table) AddRow(row Row) {
 	rendered := row.Render(true, 0)
 	for i := range rendered {
 		if rendered[i].overhead > t.overheads[i] {
@@ -50,11 +51,15 @@ func (t *TableWriter) AddRow(row Row) {
 	t.currentLine++
 }
 
-func (t *TableWriter) AddLine(line string) {
+// AddLine adds a spanning line to the table.
+//
+// Spanning lines can appear between table rows and are rendered as-is.
+func (t *Table) AddLine(line string) {
 	t.nonTableLines[t.currentLine] = append(t.nonTableLines[t.currentLine], line)
 }
 
-func (t *TableWriter) Flush() error {
+// Write writes the table to the given io.Writer.
+func (t *Table) Write(w io.Writer) error {
 	rows := [][]interface{}{}
 
 	for r := range t.rows {
@@ -81,7 +86,7 @@ func (t *TableWriter) Flush() error {
 	}
 
 	if lines, ok := t.nonTableLines[-1]; ok {
-		fmt.Fprintln(t.dest, strings.Join(lines, "\n"))
+		fmt.Fprintln(w, strings.Join(lines, "\n"))
 	}
 
 	s := bufio.NewScanner(strings.NewReader(t.buf.String()))
@@ -92,22 +97,24 @@ func (t *TableWriter) Flush() error {
 		// for c := 0; c < len(str); c++ {
 		// 	chars = append(chars, string(str[c]))
 		// }
-		fmt.Fprintln(t.dest, str)
+		fmt.Fprintln(w, str)
 		// fmt.Println(strings.Join(chars, " "))
 		if lines, ok := t.nonTableLines[i]; ok {
-			fmt.Fprintln(t.dest, strings.Join(lines, "\n"))
+			fmt.Fprintln(w, strings.Join(lines, "\n"))
 		}
 	}
 
 	if lines, ok := t.nonTableLines[i]; ok {
-		fmt.Fprintln(t.dest, strings.Join(lines, "\n"))
+		fmt.Fprintln(w, strings.Join(lines, "\n"))
 	}
 
 	return nil
 }
 
+// A Row is a set of Cells.
 type Row []Cell
 
+// Render returns a set of RenderedCells for the row.
 func (r Row) Render(formatted bool, truncate int) []RenderedCell {
 	if truncate < 0 {
 		truncate = 0
@@ -125,6 +132,8 @@ func (r Row) Render(formatted bool, truncate int) []RenderedCell {
 	return rendered
 }
 
+// A Cell is a single table cell whose value is comprised of a format string
+// and zero or more colorable values to be formatted into the string.
 type Cell struct {
 	Format string
 	Values []ColorableCellValue
@@ -157,11 +166,16 @@ func (c Cell) Render(formatted bool, truncate int) RenderedCell {
 	}
 }
 
+// A RenderedCell is the result of rendering a Cell and contains the rendered
+// string value and the total overhead in bytes added by the ANSI escape sequences.
 type RenderedCell struct {
 	value    string
 	overhead int
 }
 
+// AdjustOverhead adjusts the overhead of the rendered cell by the specified
+// amount. It does so by padding with zeros the first escape sequence found in the cell's
+// rendered value.
 func (c RenderedCell) AdjustOverhead(delta int) RenderedCell {
 	if delta == 0 {
 		return c
@@ -183,6 +197,7 @@ func (c RenderedCell) AdjustOverhead(delta int) RenderedCell {
 	return cell
 }
 
+// ColorableCellValue is a value that can be formatted with color.
 type ColorableCellValue struct {
 	Value     interface{}
 	Colors    []color.Attribute
