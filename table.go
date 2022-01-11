@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"math"
 	"regexp"
 	"strings"
 	"text/tabwriter"
@@ -54,7 +53,7 @@ type ColumnDefinition struct {
 
 // AddRow adds a row to the table.
 func (t *Table) AddRow(row Row) {
-	rendered := row.Render(0)
+	rendered := row.Render()
 	for i := range rendered {
 		if rendered[i].overhead > t.overheads[i] {
 			t.overheads[i] = rendered[i].overhead
@@ -77,7 +76,7 @@ func (t *Table) Write(w io.Writer) error {
 
 	for r := range t.rows {
 		rowValues := []interface{}{}
-		cells := t.rows[r].Render(0)
+		cells := t.rows[r].Render()
 		for c := range cells {
 			if cells[c].overhead < t.overheads[c] {
 				cells[c] = cells[c].AdjustOverhead(t.overheads[c] - cells[c].overhead)
@@ -128,18 +127,10 @@ func (t *Table) Write(w io.Writer) error {
 type Row []Cell
 
 // Render returns a set of RenderedCells for the row.
-func (r Row) Render(truncate int) []RenderedCell {
-	if truncate < 0 {
-		truncate = 0
-	}
-
+func (r Row) Render() []RenderedCell {
 	rendered := make([]RenderedCell, len(r))
 	for i, col := range r {
-		if i == 0 {
-			rendered[i] = col.Render(truncate)
-		} else {
-			rendered[i] = col.Render(0)
-		}
+		rendered[i] = col.Render()
 	}
 
 	return rendered
@@ -154,21 +145,14 @@ type Cell struct {
 
 // Render returns the string representation of the cell with any colors
 // applied, and the total overhead in bytes added by the ANSI escape sequences.
-func (c Cell) Render(truncate int) RenderedCell {
+func (c Cell) Render() RenderedCell {
 	values := []interface{}{}
 	totalOverhead := 0
-	trimmed := false
 
 	value := ""
 	overhead := 0
 	for _, v := range c.Values {
-		if truncate > 0 && !trimmed {
-			value, overhead = v.Render(truncate)
-			trimmed = true
-		} else {
-			value, overhead = v.Render(0)
-		}
-
+		value, overhead = v.Render()
 		values = append(values, value)
 		totalOverhead += overhead
 	}
@@ -188,15 +172,10 @@ type ColorableCellValue struct {
 
 // Render returns the string representation of the cell value with any colors
 // applied, and the total overhead in bytes added by the ANSI escape sequences.
-func (v *ColorableCellValue) Render(trim int) (string, int) {
+func (v *ColorableCellValue) Render() (string, int) {
 	unformatted := fmt.Sprint(v.Value)
 	colors := make([]color.Attribute, len(v.Colors))
 	copy(colors, v.Colors)
-
-	if trim > 0 {
-		trimAmount := math.Min(float64(trim), float64(len(unformatted)))
-		unformatted = unformatted[:len(unformatted)-int(trimAmount)]
-	}
 
 	if len(colors) == 0 {
 		colors = append(colors, color.Reset)
