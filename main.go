@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -16,52 +17,52 @@ func main() {
 	})
 	t.Debug = true
 	t.AddRow(Row{
-		Cell{Format: "%s color me some text", Values: []ColorableCellValue{
-			{Value: "000", Colors: []color.Attribute{}},
+		Cell{Format: "%s color me some text", Values: []FormattableCellValue{
+			{Value: "000", Format: fmt.Sprint},
 		}},
 		Cell{Format: "No color here."},
-		Cell{Format: "color %s text", Values: []ColorableCellValue{
-			{Value: "me some more", Colors: []color.Attribute{}},
-		}},
-		Cell{Format: "No color here."},
-	})
-	t.AddRow(Row{
-		Cell{Format: "%s color me some text ", Values: []ColorableCellValue{
-			{Value: "111", Colors: []color.Attribute{color.BgYellow}},
-		}},
-		Cell{Format: "No color here."},
-		Cell{Format: "color %s text", Values: []ColorableCellValue{
-			{Value: "me some more", Colors: []color.Attribute{color.BgCyan}},
+		Cell{Format: "color %s text", Values: []FormattableCellValue{
+			{Value: "me some more", Format: color.New().SprintFunc()},
 		}},
 		Cell{Format: "No color here."},
 	})
 	t.AddRow(Row{
-		Cell{Format: "%s color me some text ", Values: []ColorableCellValue{
-			{Value: "222", Colors: []color.Attribute{color.FgHiGreen, color.Underline}},
+		Cell{Format: "%s color me some text ", Values: []FormattableCellValue{
+			{Value: "111", Format: color.New(color.BgYellow).SprintFunc()},
 		}},
 		Cell{Format: "No color here."},
-		Cell{Format: "color %s text", Values: []ColorableCellValue{
-			{Value: "me some more", Colors: []color.Attribute{color.BgCyan, color.FgHiRed}},
-		}},
-		Cell{Format: "No color here."},
-	})
-	t.AddRow(Row{
-		Cell{Format: "%s color me some text ", Values: []ColorableCellValue{
-			{Value: "333", Colors: []color.Attribute{color.FgHiGreen, color.Underline, color.BgRed}},
-		}},
-		Cell{Format: "No color here."},
-		Cell{Format: "color %s text", Values: []ColorableCellValue{
-			{Value: "me some more", Colors: []color.Attribute{color.BgCyan, color.FgHiRed, color.Underline}},
+		Cell{Format: "color %s text", Values: []FormattableCellValue{
+			{Value: "me some more", Format: color.New(color.BgCyan).SprintFunc()},
 		}},
 		Cell{Format: "No color here."},
 	})
 	t.AddRow(Row{
-		Cell{Format: "%s color me some text ", Values: []ColorableCellValue{
-			{Value: "444", Colors: []color.Attribute{color.FgHiGreen, color.Underline, color.BgRed, color.CrossedOut}},
+		Cell{Format: "%s color me some text ", Values: []FormattableCellValue{
+			{Value: "222", Format: color.New(color.FgHiGreen, color.Underline).SprintFunc()},
 		}},
 		Cell{Format: "No color here."},
-		Cell{Format: "color %s text", Values: []ColorableCellValue{
-			{Value: "me some more", Colors: []color.Attribute{color.BgCyan, color.FgHiRed, color.Underline, color.CrossedOut}},
+		Cell{Format: "color %s text", Values: []FormattableCellValue{
+			{Value: "me some more", Format: color.New(color.BgCyan, color.FgHiRed).SprintFunc()},
+		}},
+		Cell{Format: "No color here."},
+	})
+	t.AddRow(Row{
+		Cell{Format: "%s color me some text ", Values: []FormattableCellValue{
+			{Value: "333", Format: color.New(color.FgHiGreen, color.Underline, color.BgRed).SprintFunc()},
+		}},
+		Cell{Format: "No color here."},
+		Cell{Format: "color %s text", Values: []FormattableCellValue{
+			{Value: "me some more", Format: color.New(color.BgCyan, color.FgHiRed, color.Underline).SprintFunc()},
+		}},
+		Cell{Format: "No color here."},
+	})
+	t.AddRow(Row{
+		Cell{Format: "%s color me some text ", Values: []FormattableCellValue{
+			{Value: "444", Format: color.New(color.FgHiGreen, color.Underline, color.BgRed, color.CrossedOut).SprintFunc()},
+		}},
+		Cell{Format: "No color here."},
+		Cell{Format: "color %s text", Values: []FormattableCellValue{
+			{Value: "me some more", Format: color.New(color.BgCyan, color.FgHiRed, color.Underline, color.CrossedOut).SprintFunc()},
 		}},
 		Cell{Format: "No color here."},
 	})

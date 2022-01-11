@@ -7,8 +7,6 @@ import (
 	"regexp"
 	"strings"
 	"text/tabwriter"
-
-	"github.com/fatih/color"
 )
 
 // A Table is a set of rows each containing cells.
@@ -140,7 +138,7 @@ func (r Row) Render() []RenderedCell {
 // and zero or more colorable values to be formatted into the string.
 type Cell struct {
 	Format string
-	Values []ColorableCellValue
+	Values []FormattableCellValue
 }
 
 // Render returns the string representation of the cell with any colors
@@ -157,31 +155,24 @@ func (c Cell) Render() RenderedCell {
 		totalOverhead += overhead
 	}
 
+	format := "\x1b[0m" + c.Format
 	return RenderedCell{
-		value:    fmt.Sprintf(c.Format, values...),
+		value:    fmt.Sprintf(format, values...),
 		overhead: totalOverhead,
 	}
 }
 
-// ColorableCellValue is a value that can be formatted with color.
-type ColorableCellValue struct {
-	Value     interface{}
-	Colors    []color.Attribute
-	Trimmable bool
+// FormattableCellValue is a value that can be formatted with color.
+type FormattableCellValue struct {
+	Format func(...interface{}) string
+	Value  interface{}
 }
 
 // Render returns the string representation of the cell value with any colors
 // applied, and the total overhead in bytes added by the ANSI escape sequences.
-func (v *ColorableCellValue) Render() (string, int) {
+func (v *FormattableCellValue) Render() (string, int) {
 	unformatted := fmt.Sprint(v.Value)
-	colors := make([]color.Attribute, len(v.Colors))
-	copy(colors, v.Colors)
-
-	if len(colors) == 0 {
-		colors = append(colors, color.Reset)
-	}
-
-	formatted := color.New(colors...).Sprint(unformatted)
+	formatted := v.Format(unformatted)
 	overhead := len(formatted) - len(unformatted)
 	return formatted, overhead
 }
