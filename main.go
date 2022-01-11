@@ -16,7 +16,7 @@ func main() {
 		{Name: "Fourth"},
 	})
 	t.Debug = true
-	t.AddRow(Row{
+	t.AddRow(
 		Cell{Format: "%s color me some text", Values: []FormattableCellValue{
 			{Value: "000", Format: fmt.Sprint},
 		}},
@@ -25,8 +25,8 @@ func main() {
 			{Value: "me some more", Format: color.New().SprintFunc()},
 		}},
 		Cell{Format: "No color here."},
-	})
-	t.AddRow(Row{
+	)
+	t.AddRow(
 		Cell{Format: "%s color me some text ", Values: []FormattableCellValue{
 			{Value: "111", Format: color.New(color.BgYellow).SprintFunc()},
 		}},
@@ -35,8 +35,8 @@ func main() {
 			{Value: "me some more", Format: color.New(color.BgCyan).SprintFunc()},
 		}},
 		Cell{Format: "No color here."},
-	})
-	t.AddRow(Row{
+	)
+	t.AddRow(
 		Cell{Format: "%s color me some text ", Values: []FormattableCellValue{
 			{Value: "222", Format: color.New(color.FgHiGreen, color.Underline).SprintFunc()},
 		}},
@@ -45,8 +45,8 @@ func main() {
 			{Value: "me some more", Format: color.New(color.BgCyan, color.FgHiRed).SprintFunc()},
 		}},
 		Cell{Format: "No color here."},
-	})
-	t.AddRow(Row{
+	)
+	t.AddRow(
 		Cell{Format: "%s color me some text ", Values: []FormattableCellValue{
 			{Value: "333", Format: color.New(color.FgHiGreen, color.Underline, color.BgRed).SprintFunc()},
 		}},
@@ -55,8 +55,8 @@ func main() {
 			{Value: "me some more", Format: color.New(color.BgCyan, color.FgHiRed, color.Underline).SprintFunc()},
 		}},
 		Cell{Format: "No color here."},
-	})
-	t.AddRow(Row{
+	)
+	t.AddRow(
 		Cell{Format: "%s color me some text ", Values: []FormattableCellValue{
 			{Value: "444", Format: color.New(color.FgHiGreen, color.Underline, color.BgRed, color.CrossedOut).SprintFunc()},
 		}},
@@ -65,7 +65,7 @@ func main() {
 			{Value: "me some more", Format: color.New(color.BgCyan, color.FgHiRed, color.Underline, color.CrossedOut).SprintFunc()},
 		}},
 		Cell{Format: "No color here."},
-	})
+	)
 
 	if err := t.Write(os.Stdout); err != nil {
 		log.Fatal(err)

@@ -50,8 +50,8 @@ type ColumnDefinition struct {
 }
 
 // AddRow adds a row to the table.
-func (t *Table) AddRow(row Row) {
-	rendered := row.Render()
+func (t *Table) AddRow(row ...Cell) {
+	rendered := Row(row).Render()
 	for i := range rendered {
 		if rendered[i].overhead > t.overheads[i] {
 			t.overheads[i] = rendered[i].overhead
