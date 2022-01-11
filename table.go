@@ -14,6 +14,7 @@ import (
 
 // A Table is a set of rows each containing cells.
 type Table struct {
+	columns       []ColumnDefinition
 	rowFormat     string
 	rows          []Row
 	overheads     []int
@@ -25,13 +26,14 @@ type Table struct {
 	Debug bool
 }
 
-// NewTable creates a new table with the specified number of columns.
-func NewTable(columns int) *Table {
+// NewTableWithColumns creates a new table with the specified columns.
+func NewTableWithColumns(columns []ColumnDefinition) *Table {
 	buf := &strings.Builder{}
 	return &Table{
-		rowFormat:     strings.Repeat("%s\t", columns) + "\n",
+		columns:       columns,
+		rowFormat:     strings.Repeat("%s\t", len(columns)) + "\n",
 		rows:          []Row{},
-		overheads:     make([]int, columns),
+		overheads:     make([]int, len(columns)),
 		nonTableLines: map[int][]string{},
 		currentLine:   -1,
 		buf:           buf,
@@ -39,9 +41,20 @@ func NewTable(columns int) *Table {
 	}
 }
 
+// NewTable creates a new table with the specified number of columns.
+func NewTable(columns int) *Table {
+	return NewTableWithColumns(make([]ColumnDefinition, columns))
+}
+
+// A ColumnDefinition defines a column in a table.
+type ColumnDefinition struct {
+	Name      string
+	MinLength int
+}
+
 // AddRow adds a row to the table.
 func (t *Table) AddRow(row Row) {
-	rendered := row.Render(true, 0)
+	rendered := row.Render(0)
 	for i := range rendered {
 		if rendered[i].overhead > t.overheads[i] {
 			t.overheads[i] = rendered[i].overhead
@@ -64,7 +77,7 @@ func (t *Table) Write(w io.Writer) error {
 
 	for r := range t.rows {
 		rowValues := []interface{}{}
-		cells := t.rows[r].Render(true, 0)
+		cells := t.rows[r].Render(0)
 		for c := range cells {
 			if cells[c].overhead < t.overheads[c] {
 				cells[c] = cells[c].AdjustOverhead(t.overheads[c] - cells[c].overhead)
@@ -115,7 +128,7 @@ func (t *Table) Write(w io.Writer) error {
 type Row []Cell
 
 // Render returns a set of RenderedCells for the row.
-func (r Row) Render(formatted bool, truncate int) []RenderedCell {
+func (r Row) Render(truncate int) []RenderedCell {
 	if truncate < 0 {
 		truncate = 0
 	}
@@ -123,9 +136,9 @@ func (r Row) Render(formatted bool, truncate int) []RenderedCell {
 	rendered := make([]RenderedCell, len(r))
 	for i, col := range r {
 		if i == 0 {
-			rendered[i] = col.Render(formatted, truncate)
+			rendered[i] = col.Render(truncate)
 		} else {
-			rendered[i] = col.Render(formatted, 0)
+			rendered[i] = col.Render(0)
 		}
 	}
 
@@ -141,7 +154,7 @@ type Cell struct {
 
 // Render returns the string representation of the cell with any colors
 // applied, and the total overhead in bytes added by the ANSI escape sequences.
-func (c Cell) Render(formatted bool, truncate int) RenderedCell {
+func (c Cell) Render(truncate int) RenderedCell {
 	values := []interface{}{}
 	totalOverhead := 0
 	trimmed := false
@@ -150,10 +163,10 @@ func (c Cell) Render(formatted bool, truncate int) RenderedCell {
 	overhead := 0
 	for _, v := range c.Values {
 		if truncate > 0 && !trimmed {
-			value, overhead = v.Render(formatted, truncate)
+			value, overhead = v.Render(truncate)
 			trimmed = true
 		} else {
-			value, overhead = v.Render(formatted, 0)
+			value, overhead = v.Render(0)
 		}
 
 		values = append(values, value)
@@ -164,6 +177,34 @@ func (c Cell) Render(formatted bool, truncate int) RenderedCell {
 		value:    fmt.Sprintf(c.Format, values...),
 		overhead: totalOverhead,
 	}
+}
+
+// ColorableCellValue is a value that can be formatted with color.
+type ColorableCellValue struct {
+	Value     interface{}
+	Colors    []color.Attribute
+	Trimmable bool
+}
+
+// Render returns the string representation of the cell value with any colors
+// applied, and the total overhead in bytes added by the ANSI escape sequences.
+func (v *ColorableCellValue) Render(trim int) (string, int) {
+	unformatted := fmt.Sprint(v.Value)
+	colors := make([]color.Attribute, len(v.Colors))
+	copy(colors, v.Colors)
+
+	if trim > 0 {
+		trimAmount := math.Min(float64(trim), float64(len(unformatted)))
+		unformatted = unformatted[:len(unformatted)-int(trimAmount)]
+	}
+
+	if len(colors) == 0 {
+		colors = append(colors, color.Reset)
+	}
+
+	formatted := color.New(colors...).Sprint(unformatted)
+	overhead := len(formatted) - len(unformatted)
+	return formatted, overhead
 }
 
 // A RenderedCell is the result of rendering a Cell and contains the rendered
@@ -195,34 +236,4 @@ func (c RenderedCell) AdjustOverhead(delta int) RenderedCell {
 	}
 
 	return cell
-}
-
-// ColorableCellValue is a value that can be formatted with color.
-type ColorableCellValue struct {
-	Value     interface{}
-	Colors    []color.Attribute
-	Trimmable bool
-}
-
-// Render returns the string representation of the cell value with any colors
-// applied, and the total overhead in bytes added by the ANSI escape sequences.
-func (v *ColorableCellValue) Render(formatted bool, trim int) (string, int) {
-	unformatted := fmt.Sprint(v.Value)
-
-	if trim > 0 {
-		trimAmount := math.Min(float64(trim), float64(len(unformatted)))
-		unformatted = unformatted[:len(unformatted)-int(trimAmount)]
-	}
-
-	if formatted {
-		if len(v.Colors) == 0 {
-			v.Colors = append(v.Colors, color.Reset)
-		}
-
-		formatted := color.New(v.Colors...).Sprint(unformatted)
-		overhead := len(formatted) - len(unformatted)
-		return formatted, overhead
-	}
-
-	return unformatted, 0
 }
