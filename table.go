@@ -19,8 +19,6 @@ type Table struct {
 	currentLine   int
 	buf           *strings.Builder
 	tw            *tabwriter.Writer
-
-	Debug bool
 }
 
 // NewTableWithColumns creates a new table with the specified columns.
@@ -34,7 +32,7 @@ func NewTableWithColumns(columns []ColumnDefinition) *Table {
 		nonTableLines: map[int][]string{},
 		currentLine:   -1,
 		buf:           buf,
-		tw:            tabwriter.NewWriter(buf, 0, 0, 2, ' ', tabwriter.Debug),
+		tw:            tabwriter.NewWriter(buf, 0, 0, 2, ' ', 0),
 	}
 }
 

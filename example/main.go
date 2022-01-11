@@ -16,7 +16,6 @@ func main() {
 		{Name: "Third", MinLength: 10},
 		{Name: "Fourth"},
 	})
-	t.Debug = true
 	t.AddRow(
 		tablecloth.Cell{Format: "%s color me some text", Values: []tablecloth.FormattableCellValue{
 			{Value: "000", Format: fmt.Sprint},
