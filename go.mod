@@ -1,4 +1,4 @@
-module test
+module github.com/jefflinse/tablecloth
 
 go 1.17
 

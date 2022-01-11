@@ -1,4 +1,4 @@
-package main
+package tablecloth
 
 import (
 	"bufio"

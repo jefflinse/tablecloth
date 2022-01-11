@@ -6,10 +6,11 @@ import (
 	"os"
 
 	"github.com/fatih/color"
+	"github.com/jefflinse/tablecloth"
 )
 
 func main() {
-	t := NewTableWithColumns([]ColumnDefinition{
+	t := tablecloth.NewTableWithColumns([]tablecloth.ColumnDefinition{
 		{Name: "First", MinLength: 10},
 		{Name: "Second"},
 		{Name: "Third", MinLength: 10},
@@ -17,54 +18,54 @@ func main() {
 	})
 	t.Debug = true
 	t.AddRow(
-		Cell{Format: "%s color me some text", Values: []FormattableCellValue{
+		tablecloth.Cell{Format: "%s color me some text", Values: []tablecloth.FormattableCellValue{
 			{Value: "000", Format: fmt.Sprint},
 		}},
-		Cell{Format: "No color here."},
-		Cell{Format: "color %s text", Values: []FormattableCellValue{
+		tablecloth.Cell{Format: "No color here."},
+		tablecloth.Cell{Format: "color %s text", Values: []tablecloth.FormattableCellValue{
 			{Value: "me some more", Format: color.New().SprintFunc()},
 		}},
-		Cell{Format: "No color here."},
+		tablecloth.Cell{Format: "No color here."},
 	)
 	t.AddRow(
-		Cell{Format: "%s color me some text ", Values: []FormattableCellValue{
+		tablecloth.Cell{Format: "%s color me some text ", Values: []tablecloth.FormattableCellValue{
 			{Value: "111", Format: color.New(color.BgYellow).SprintFunc()},
 		}},
-		Cell{Format: "No color here."},
-		Cell{Format: "color %s text", Values: []FormattableCellValue{
+		tablecloth.Cell{Format: "No color here."},
+		tablecloth.Cell{Format: "color %s text", Values: []tablecloth.FormattableCellValue{
 			{Value: "me some more", Format: color.New(color.BgCyan).SprintFunc()},
 		}},
-		Cell{Format: "No color here."},
+		tablecloth.Cell{Format: "No color here."},
 	)
 	t.AddRow(
-		Cell{Format: "%s color me some text ", Values: []FormattableCellValue{
+		tablecloth.Cell{Format: "%s color me some text ", Values: []tablecloth.FormattableCellValue{
 			{Value: "222", Format: color.New(color.FgHiGreen, color.Underline).SprintFunc()},
 		}},
-		Cell{Format: "No color here."},
-		Cell{Format: "color %s text", Values: []FormattableCellValue{
+		tablecloth.Cell{Format: "No color here."},
+		tablecloth.Cell{Format: "color %s text", Values: []tablecloth.FormattableCellValue{
 			{Value: "me some more", Format: color.New(color.BgCyan, color.FgHiRed).SprintFunc()},
 		}},
-		Cell{Format: "No color here."},
+		tablecloth.Cell{Format: "No color here."},
 	)
 	t.AddRow(
-		Cell{Format: "%s color me some text ", Values: []FormattableCellValue{
+		tablecloth.Cell{Format: "%s color me some text ", Values: []tablecloth.FormattableCellValue{
 			{Value: "333", Format: color.New(color.FgHiGreen, color.Underline, color.BgRed).SprintFunc()},
 		}},
-		Cell{Format: "No color here."},
-		Cell{Format: "color %s text", Values: []FormattableCellValue{
+		tablecloth.Cell{Format: "No color here."},
+		tablecloth.Cell{Format: "color %s text", Values: []tablecloth.FormattableCellValue{
 			{Value: "me some more", Format: color.New(color.BgCyan, color.FgHiRed, color.Underline).SprintFunc()},
 		}},
-		Cell{Format: "No color here."},
+		tablecloth.Cell{Format: "No color here."},
 	)
 	t.AddRow(
-		Cell{Format: "%s color me some text ", Values: []FormattableCellValue{
+		tablecloth.Cell{Format: "%s color me some text ", Values: []tablecloth.FormattableCellValue{
 			{Value: "444", Format: color.New(color.FgHiGreen, color.Underline, color.BgRed, color.CrossedOut).SprintFunc()},
 		}},
-		Cell{Format: "No color here."},
-		Cell{Format: "color %s text", Values: []FormattableCellValue{
+		tablecloth.Cell{Format: "No color here."},
+		tablecloth.Cell{Format: "color %s text", Values: []tablecloth.FormattableCellValue{
 			{Value: "me some more", Format: color.New(color.BgCyan, color.FgHiRed, color.Underline, color.CrossedOut).SprintFunc()},
 		}},
-		Cell{Format: "No color here."},
+		tablecloth.Cell{Format: "No color here."},
 	)
 
 	if err := t.Write(os.Stdout); err != nil {
